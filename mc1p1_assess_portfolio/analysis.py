@@ -21,10 +21,29 @@ def assess_portfolio(sd = dt.datetime(2008,1,1), ed = dt.datetime(2009,1,1), \
     prices_SPY = prices_all['SPY']  # only SPY, for comparison later
 
     # Get daily portfolio value
-    port_val = prices_SPY # add code here to compute daily portfolio values
+    #First normalize allocations
+    # add code here to compute daily portfolio values
+    prices_norm=prices/prices.ix[0,:]
+    for i, alloc in enumerate( allocs):
+        prices_norm.ix[:,[i]]=prices_norm.ix[:,[i]]*alloc*sv
+
+    prices_norm["port_val"]=prices_norm.sum(axis=1)
+    
+    
+        
 
     # Get portfolio statistics (note: std_daily_ret = volatility)
-    cr, adr, sddr, sr = [0.25, 0.001, 0.0005, 2.1] # add code here to compute stats
+    #code for stats
+    cr=(prices_norm.ix[-1,-1]-prices_norm.ix[0,-1])/prices_norm.ix[0,-1]
+   
+    #adr
+    prices_norm["daily_return"]=prices_norm.ix[:,-1]/prices_norm.ix[:,-1].shift(1)-1
+    prices_norm.ix[0,-1]=0
+    adr=prices_norm["daily_return"].mean()
+
+
+    sddr=prices_norm["daily_return"].std()
+    sr =1  ####!!!! PICK UP HERE
 
     # Compare daily portfolio value with SPY using a normalized plot
     if gen_plot:
