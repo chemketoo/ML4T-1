@@ -28,6 +28,7 @@ def assess_portfolio(sd = dt.datetime(2008,1,1), ed = dt.datetime(2009,1,1), \
         prices_norm.ix[:,[i]]=prices_norm.ix[:,[i]]*alloc*sv
 
     prices_norm["port_val"]=prices_norm.sum(axis=1)
+    port_val=prices_norm["port_val"]
     
     
         
@@ -41,18 +42,25 @@ def assess_portfolio(sd = dt.datetime(2008,1,1), ed = dt.datetime(2009,1,1), \
     prices_norm.ix[0,-1]=0
     adr=prices_norm["daily_return"].mean()
 
-
+    #sddr, std deviation of daily returns
     sddr=prices_norm["daily_return"].std()
-    sr =1  ####!!!! PICK UP HERE
+
+    #Sharpe Ratio
+    sr =252**(1/252)*adr/sddr
 
     # Compare daily portfolio value with SPY using a normalized plot
     if gen_plot:
         # add code to plot here
+
         df_temp = pd.concat([port_val, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)
+        df_temp.plot()
+        plt.show()
+
+
         pass
 
     # Add code here to properly compute end value
-    ev = sv
+    ev = prices_norm["port_val"].iloc[-1]
 
     return cr, adr, sddr, sr, ev
 
@@ -87,6 +95,7 @@ def test_code():
     print "Volatility (stdev of daily returns):", sddr
     print "Average Daily Return:", adr
     print "Cumulative Return:", cr
+    print "end value of portfolio", ev
 
 if __name__ == "__main__":
     test_code()
