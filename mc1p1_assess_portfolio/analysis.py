@@ -46,7 +46,7 @@ def assess_portfolio(sd = dt.datetime(2008,1,1), ed = dt.datetime(2009,1,1), \
     sddr=prices_norm["daily_return"].std()
 
     #Sharpe Ratio
-    sr =252**(1/252)*adr/sddr
+    sr =252**(1/2)*adr/sddr
 
     # Compare daily portfolio value with SPY using a normalized plot
     if gen_plot:
