@@ -1,14 +1,38 @@
 """MC1-P1: Analyze a portfolio."""
 
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
 from util import get_data, plot_data
 
+#takes in a df and computes cr, adr, sddr,sr
+def compute_pf_stats(df,rfr,sf):
+    # Get portfolio statistics (note: std_daily_ret = volatility)
+    # code for stats
+    cr = (df.ix[-1, -2] - df.ix[0, -2]) / df.ix[0, -2]
+
+    # adr
+    adr = df["daily_returns"][1:].mean()
+
+    # sddr, std deviation of daily returns
+    sddr = df["daily_returns"][1:].std()
+
+    # Sharpe Ratio
+    sr = (sf ** (1.0 / 2.0) * (adr - rfr)) / sddr
+
+    # Compare daily portfolio value with SPY using a normalized plot
+
+
+
+
+    return cr, adr, sddr, sr
+
 # This is the function that will be tested by the autograder
 # The student must update this code to properly implement the functionality
-def assess_portfolio(sd, ed , syms , allocs, sv, rfr=0.0,sf=252.0, gen_plot=False):
+def assess_portfolio(sd, ed , syms , allocs, sv,  gen_plot, rfr=0.0,sf=252.0,):
 
     # Read in adjusted closing prices for given symbols, date range
     dates = pd.date_range(sd, ed)
@@ -27,43 +51,44 @@ def assess_portfolio(sd, ed , syms , allocs, sv, rfr=0.0,sf=252.0, gen_plot=Fals
     #normalize the data
     prices_norm=prices/prices.ix[0,:]
 
+    #normalize SPY data
+    prices_SPY_norm=prices_SPY/prices_SPY.ix[0]
+
+
+
+
     for i, alloc in enumerate(allocs):
-        prices_norm.ix[:,[i]]=prices_norm.ix[:,[i]]*alloc*sv
+        prices_norm.ix[:,[i]]=prices_norm.ix[:,[i]]*alloc
 
 
     prices_norm["port_val"]=prices_norm.sum(axis=1)
-    port_val=prices_norm["port_val"]
 
-    daily_returns=(port_val[1:]/port_val[:-1].values) -1
+    #multiply by sv to get comparison
+    port_val=prices_norm["port_val"]*sv
+    SPY_val=prices_SPY_norm*sv
 
-        
+    # calculate ev
+    ev = port_val.iloc[-1]
 
-    # Get portfolio statistics (note: std_daily_ret = volatility)
-    #code for stats
-    cr=(prices_norm.ix[-1,-1]-prices_norm.ix[0,-1])/prices_norm.ix[0,-1]
-   
-    #adr
-    adr=daily_returns.mean()
+    prices_norm["daily_returns"]=(prices_norm["port_val"][1:]/prices_norm["port_val"][:-1].values) -1
+    prices_norm["daily_returns"][0]=0
 
-    #sddr, std deviation of daily returns
-    sddr=daily_returns.std()
+    cr, adr, sddr, sr= compute_pf_stats(prices_norm,rfr,sf)
 
-    #Sharpe Ratio
-    sr =(252.0**(1.0/2.0)*adr)/sddr
 
-    # Compare daily portfolio value with SPY using a normalized plot
+
+    #NOTE gen_plot currently uses port_val and port_val_SPY-- might make sense to use main df going forward
     if gen_plot:
         # add code to plot here
 
-        df_temp = pd.concat([port_val, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)
+        df_temp = pd.concat([port_val, SPY_val], keys=['Portfolio', 'SPY'], axis=1)
         df_temp.plot()
         plt.show()
-        pass
-
-    # Add code here to properly compute end value
-    ev = prices_norm["port_val"].iloc[-1]
+        plt.savefig('stock_plot.png')
 
     return cr, adr, sddr, sr, ev
+
+
 
 def test_code():
     # This code WILL NOT be tested by the auto grader
@@ -72,7 +97,6 @@ def test_code():
     # Define input parameters
     # Note that ALL of these values will be set to different values by
     # the autograder!
-    print "ADDITIIONAL TEST CASES"
     start_date = dt.datetime(2011, 1, 1)
     end_date = dt.datetime(2011, 12, 31)
     symbols = ['WFR', 'ANR', 'MWW', 'FSLR']
@@ -85,7 +109,7 @@ def test_code():
                                              syms=symbols, \
                                              allocs=allocations, \
                                              sv=start_val, \
-                                             gen_plot=False)
+                                             gen_plot=True)
 
     print "Sharpe Ratio:", sr
     print "EXPECTED SHARPE -1.93664660013"
@@ -105,7 +129,7 @@ def test_code():
         syms = symbols, \
         allocs = allocations,\
         sv = start_val, \
-        gen_plot = False)
+        gen_plot = True)
 
     # Print statistics
     print "Start Date:", start_date
