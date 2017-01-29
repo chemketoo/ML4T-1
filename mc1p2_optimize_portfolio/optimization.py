@@ -9,77 +9,78 @@ import datetime as dt
 from scipy.optimize import minimize
 from util import get_data, plot_data
 
-def compute_pf_stats(df,rfr,sf):
-    # Get portfolio statistics (note: std_daily_ret = volatility)
-    # code for stats
-    cr = (df.ix[-1, -2] - df.ix[0, -2]) / df.ix[0, -2]
 
-    # adr
-    adr = df["daily_returns"][1:].mean()
-
-    # sddr, std deviation of daily returns
-    sddr = df["daily_returns"][1:].std()
-
-    # Sharpe Ratio
-    sr = (sf ** (1.0 / 2.0) * (adr - rfr)) / sddr
-
-    # Compare daily portfolio value with SPY using a normalized plot
-
-    return cr, adr, sddr, sr
-
-def assess_portfolio(sd, ed , syms, allocs, sv, gen_plot, rfr=0.0,sf=252.0,):
-
-    # Read in adjusted closing prices for given symbols, date range
-    dates = pd.date_range(sd, ed)
-    prices_all = get_data(syms, dates)  # automatically adds SPY
-    prices = prices_all[syms]  # only portfolio symbols
-    prices_SPY = prices_all['SPY']  # only SPY, for comparison later
-
-
-    # forward fill and backward fill nans in the df
-    prices= prices.fillna(method="ffill")
-    prices=prices.fillna(method="bfill")
-
-    # Get daily portfolio value
-    #First normalize allocations
-    # add code here to compute daily portfolio values
-    #normalize the data
-    prices_norm=prices/prices.ix[0,:]
-
-    #normalize SPY data
-    prices_SPY_norm=prices_SPY/prices_SPY.ix[0]
-
-    for i, alloc in enumerate(allocs):
-        prices_norm.ix[:,[i]]=prices_norm.ix[:,[i]]*alloc
-
-    prices_norm["port_val"]=prices_norm.sum(axis=1)
-
-    #multiply by sv to get comparison
-    port_val=prices_norm["port_val"]*sv
-    SPY_val=prices_SPY_norm*sv
-
-    # calculate ev
-    ev = port_val.iloc[-1]
-
-    prices_norm["daily_returns"]=(prices_norm["port_val"][1:]/prices_norm["port_val"][:-1].values) -1
-    prices_norm["daily_returns"][0]=0
-
-    cr, adr, sddr, sr= compute_pf_stats(prices_norm,rfr,sf)
-
-    #NOTE gen_plot currently uses port_val and port_val_SPY-- might make sense to use main df going forward
-    if gen_plot:
-        # create plot and save
-
-        df_temp = pd.concat([port_val, SPY_val], keys=['Portfolio', 'SPY'], axis=1)
-        df_temp.plot()
-        plt.savefig('comparison_optimal.png')
-
-    return cr, adr, sddr, sr, ev
 
 # This is the function that will be tested by the autograder
 # The student must update this code to properly implement the functionality
 def optimize_portfolio(sd, ed, syms, gen_plot):
 
+    #including compute pf_stats and assess portfolio in body of optimize_portfolio to meet class reqs
+    def compute_pf_stats(df, rfr, sf):
+        # Get portfolio statistics (note: std_daily_ret = volatility)
+        # code for stats
+        cr = (df.ix[-1, -2] - df.ix[0, -2]) / df.ix[0, -2]
+
+        # adr
+        adr = df["daily_returns"][1:].mean()
+
+        # sddr, std deviation of daily returns
+        sddr = df["daily_returns"][1:].std()
+
+        # Sharpe Ratio
+        sr = (sf ** (1.0 / 2.0) * (adr - rfr)) / sddr
+
+        # Compare daily portfolio value with SPY using a normalized plot
+
+        return cr, adr, sddr, sr
+
+    def assess_portfolio(sd, ed, syms, allocs, sv, gen_plot, rfr=0.0, sf=252.0, ):
+
+        # Read in adjusted closing prices for given symbols, date range
+        dates = pd.date_range(sd, ed)
+        prices_all = get_data(syms, dates)  # automatically adds SPY
+        prices = prices_all[syms]  # only portfolio symbols
+        prices_SPY = prices_all['SPY']  # only SPY, for comparison later
+
+        # forward fill and backward fill nans in the df
+        prices = prices.fillna(method="ffill")
+        prices = prices.fillna(method="bfill")
+
+        # Get daily portfolio value
+        # First normalize allocations
+        # add code here to compute daily portfolio values
+        # normalize the data
+        prices_norm = prices / prices.ix[0, :]
+
+        # normalize SPY data
+        prices_SPY_norm = prices_SPY / prices_SPY.ix[0]
+
+        for i, alloc in enumerate(allocs):
+            prices_norm.ix[:, [i]] = prices_norm.ix[:, [i]] * alloc
+
+        prices_norm["port_val"] = prices_norm.sum(axis=1)
+
+        # multiply by sv to get comparison
+        port_val = prices_norm["port_val"] * sv
+        SPY_val = prices_SPY_norm * sv
+
+        # calculate ev
+        ev = port_val.iloc[-1]
+
+        prices_norm["daily_returns"] = (prices_norm["port_val"][1:] / prices_norm["port_val"][:-1].values) - 1
+        prices_norm["daily_returns"][0] = 0
+
+        cr, adr, sddr, sr = compute_pf_stats(prices_norm, rfr, sf)
+
+        # NOTE gen_plot currently uses port_val and port_val_SPY-- might make sense to use main df going forward
+        if gen_plot:
+            # create plot and save
+
+            df_temp = pd.concat([port_val, SPY_val], keys=['Portfolio', 'SPY'], axis=1)
+            df_temp.plot()
+            plt.savefig('comparison_optimal.png')
+
+        return cr, adr, sddr, sr, ev
     # Read in adjusted closing prices for given symbols, date range
     dates = pd.date_range(sd, ed)
     prices_all = get_data(syms, dates)  # automatically adds SPY
