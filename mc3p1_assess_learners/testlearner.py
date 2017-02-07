@@ -5,13 +5,23 @@ Test a learner.  (c) 2015 Tucker Balch
 import numpy as np
 import math
 import LinRegLearner as lrl
+import RTLearner as rt
+import pandas as pd
 import sys
+
+
+
+#!!!!DEBUG Statement, set to FALSE when submitting
+debug=True
+def log(s):
+    if debug:
+        print s
 
 if __name__=="__main__":
     if len(sys.argv) != 2:
         print "Usage: python testlearner.py <filename>"
         sys.exit(1)
-    inf = open(sys.argv[1])
+    inf = open(sys.argv[1]) #open the data file we want to apply test learner too
     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
 
     # compute how much of the data is training and testing
@@ -27,13 +37,36 @@ if __name__=="__main__":
     print testX.shape
     print testY.shape
 
+    #test divide data function
+    #set1, set2= rt.divide_data(testX,3,2)
+    #log(set1.head())
+
+    #Code for RTLearner_test
+    learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
+    learner.addEvidence(trainX, trainY)  # training step,
+
+
+    #Get in sample results
+    # PredY = learner.query(Xtrain)  # query
+    # print "In sample results for RTLearner"
+    # print "RMSE: ", rmse
+    # c = np.corrcoef(predY, y=trainY)
+    # print "corr: ", c[0, 1]
+
+    #Get out of sample results
+    #PredY = learner.query(Xtest)  # query
+    #print "Out of sample results for RTLearner"
+    #print "RMSE: ", rmse
+    #c = np.corrcoef(predY, y=trainY)
+    #print "corr: ", c[0, 1]
+    '''
     # create a learner and train it
-    learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
-    learner.addEvidence(trainX, trainY) # train it
+    #learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
+    #learner.addEvidence(trainX, trainY) # train it
 
     # evaluate in sample
-    predY = learner.query(trainX) # get the predictions
-    rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
+    #predY = learner.query(trainX) # get the predictions
+    #rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
     print
     print "In sample results"
     print "RMSE: ", rmse
@@ -48,3 +81,4 @@ if __name__=="__main__":
     print "RMSE: ", rmse
     c = np.corrcoef(predY, y=testY)
     print "corr: ", c[0,1]
+    '''
