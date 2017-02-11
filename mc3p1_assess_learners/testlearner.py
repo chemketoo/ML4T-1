@@ -43,9 +43,16 @@ if __name__=="__main__":
 
     #Code for RTLearner_test
     learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
-    learner.addEvidence(trainX, trainY)  # training step,
+    # training step,
+    tree=learner.addEvidence(trainX, trainY)
 
+    #printree
+    #learner.printtree(tree)
 
+    Y = learner.query(tree, testX)
+    log("THIS IS OUTPUT Y")
+    log(Y)
+    #log(Y)
     #Get in sample results
     # PredY = learner.query(Xtrain)  # query
     # print "In sample results for RTLearner"
