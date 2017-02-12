@@ -8,7 +8,7 @@ import LinRegLearner as lrl
 import RTLearner as rt
 import pandas as pd
 import sys
-
+import BagLearner as bl
 
 
 #!!!!DEBUG Statement, set to FALSE when submitting
@@ -42,15 +42,21 @@ if __name__=="__main__":
     #log(set1.head())
 
     #Code for RTLearner_test
-    learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
+    #learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
     # training step,
-    tree=learner.addEvidence(trainX, trainY)
+    #learner.addEvidence(trainX, trainY)
+    #!!!printree, currently not working
+    #learner.printtree()
 
-    #printree
-    #learner.printtree(tree)
+    #Y = learner.query(testX)
 
-    Y = learner.query(tree, testX)
-    log("THIS IS OUTPUT Y")
+    #code for BagLearner
+
+
+    learner = bl.BagLearner(learner = rt.RTLearner, kwargs = {"leaf_size":1}, bags = 20, boost = False, verbose = False)
+    learner.addEvidence(trainX, trainY)
+    Y = learner.query(testX)
+    log("HERE IS THE bag learner query")
     log(Y)
     #log(Y)
     #Get in sample results
