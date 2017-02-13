@@ -21,6 +21,7 @@ class RTLearner(object):
 
         self.leaf_size=leaf_size
         self.tree=None
+        self.temp_tree=None
 
         self.col = col  # col that splits on
         self.value = value  # split value
@@ -37,19 +38,18 @@ class RTLearner(object):
         if len(data) <= 1 or len(np.unique(data.iloc[:, -1])) <= 1:
             return RTLearner(results=np.mean(data.iloc[:, -1]))
 
-        random_vals = 0  # initialize to 0
-
         # randomly pick a random feature i of data to split on
+        #id those columns that have split potential
+        col_list=range(0,data.shape[1]-1)
+        random.shuffle(col_list)
 
-        i = random.randrange(0, stop=data.shape[1] - 1)
-        # randomly pick two unique values at that feature for the split val (average)
-        if len(np.unique(data.iloc[:, i])) > 1:
-            random_vals = np.random.choice(np.unique(data.iloc[:, i]), 2, replace=False)
+        split_ix=next(x for x in col_list if len(np.unique(data.iloc[:,x])) > 1)
+        random_vals = np.random.choice(np.unique(data.iloc[:, split_ix]), 2, replace=False)
+
         # if only one unique value use that
-        elif len(np.unique(data.iloc[:, i])) == 1:
-            random_vals = data.iloc[0, i]
+        #elif len(np.unique(data.iloc[:, i])) == 1:
+        #    random_vals = data.iloc[0, i]
         # get mean of those values
-        split_ix = i
         split_val = np.mean(random_vals)
         if len(data) > self.leaf_size and len(np.unique(data.iloc[:, -1])) > self.leaf_size:
 
@@ -60,18 +60,20 @@ class RTLearner(object):
             log("YOU SHOULD NOT REACH HERE")
 
     # the following code is helpful for visualizing the tree
-    def printtree(self,tree, indent=''):
+    def printtree(self,indent=''):
         # Is this a leaf node?
-        if tree.results != None:
-            print(str(tree.results))
+        if self.tree.results != None:
+            print(str(self.tree.results))
         else:
             #print the column ix of interest for splitting, and the value that was split on
-            print(str(tree.col) + ':' + str(tree.value) + '? ')
+            print(str(self.tree.col) + ':' + str(self.tree.value) + '? ')
             # Print the branches for the next trees
             print(indent + 'T->'),
-            self.printtree(tree.tb, indent + '  ')
+            self.tree=self.tree.tb
+            self.printtree(indent + '  ')
             print(indent + 'F->'),
-            self.printtree(tree.fb, indent + '  ')
+            self.tree=self.tree.fb
+            self.printtree(indent + '  ')
 
     #uncomment the following to print tree
     #!!!bring in the data
@@ -79,7 +81,7 @@ class RTLearner(object):
         #join the data so can track the predictions as we manipulate
         data=np.concatenate((trainX,trainY[:, None]),axis=1)
         data=pd.DataFrame(data)
-        return self.build_tree(data)
+        self.tree=self.build_tree(data)
 
     """
     @summary: Add training data to learner
@@ -97,21 +99,22 @@ class RTLearner(object):
 
     """
 
-    def classify_obs(self, tree, obs):
-        if tree.results != None:
-            return tree.results
-        obs_val = obs[tree.col]  # take the obs value at the index in the decision  tree
-        if obs_val > tree.value:
-            tree = tree.tb  # go down the true branch
+    def classify_obs(self, obs):
+        if self.temp_tree.results != None:
+            return self.temp_tree.results
+        obs_val = obs[self.temp_tree.col]  # take the obs value at the index in the decision  tree
+        if obs_val > self.temp_tree.value:
+            self.temp_tree = self.temp_tree.tb  # go down the true branch
         else:
-            tree = tree.fb
-        return self.classify_obs(tree, obs)
+            self.temp_tree = self.temp_tree.fb
+        return self.classify_obs(obs)
     #!!!use tree to classify new data points (first classify one datapoint then apply to all)
-    def query(self, tree, points):
+    def query(self, points):
         # take the given tree and a new observation and return the value of interest for that observation
         Y_pred=[]
         for row in points:
-            Y_pred.append(self.classify_obs(tree,row))
+            self.temp_tree=self.tree
+            Y_pred.append(self.classify_obs(row))
         return Y_pred
 
 
@@ -126,6 +129,8 @@ class RTLearner(object):
         ret_val = ret_val + 0.09 * np.random.normal(size=ret_val.shape[0])
         return ret_val
 
+    def author(self):
+        return 'nbuckley7'  #  Georgia Tech username.
 
 if __name__ == "__main__":
     print "get me a shrubbery"

@@ -37,61 +37,41 @@ if __name__=="__main__":
     print testX.shape
     print testY.shape
 
-    #test divide data function
-    #set1, set2= rt.divide_data(testX,3,2)
-    #log(set1.head())
-
     #Code for RTLearner_test
-    #learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
-    # training step,
-    #learner.addEvidence(trainX, trainY)
-    #!!!printree, currently not working
-    #learner.printtree()
-
-    #Y = learner.query(testX)
-
-    #code for BagLearner
-
-
-    learner = bl.BagLearner(learner = rt.RTLearner, kwargs = {"leaf_size":1}, bags = 20, boost = False, verbose = False)
+    learner = rt.RTLearner(leaf_size=1, verbose=False)  # constructor
     learner.addEvidence(trainX, trainY)
-    Y = learner.query(testX)
-    log("HERE IS THE bag learner query")
-    log(Y)
-    #log(Y)
-    #Get in sample results
-    # PredY = learner.query(Xtrain)  # query
-    # print "In sample results for RTLearner"
-    # print "RMSE: ", rmse
-    # c = np.corrcoef(predY, y=trainY)
-    # print "corr: ", c[0, 1]
 
-    #Get out of sample results
-    #PredY = learner.query(Xtest)  # query
-    #print "Out of sample results for RTLearner"
-    #print "RMSE: ", rmse
-    #c = np.corrcoef(predY, y=trainY)
-    #print "corr: ", c[0, 1]
-    '''
-    # create a learner and train it
-    #learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
-    #learner.addEvidence(trainX, trainY) # train it
-
-    # evaluate in sample
-    #predY = learner.query(trainX) # get the predictions
-    #rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
-    print
-    print "In sample results"
+    print "In sample results for RTLearner"
+    predY = learner.query(trainX)
+    rmse = math.sqrt(((trainY - predY) ** 2).sum() / trainY.shape[0])
     print "RMSE: ", rmse
     c = np.corrcoef(predY, y=trainY)
-    print "corr: ", c[0,1]
+    print "corr: ", c[0, 1]
 
-    # evaluate out of sample
-    predY = learner.query(testX) # get the predictions
-    rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
-    print
-    print "Out of sample results"
+    #Get out of sample results
+    print "Out of sample results for RTlearner"
+    predY = learner.query(testX)  # query
+    rmse = math.sqrt(((testY - predY) ** 2).sum() / testY.shape[0])
     print "RMSE: ", rmse
     c = np.corrcoef(predY, y=testY)
-    print "corr: ", c[0,1]
-    '''
+    print "corr: ", c[0, 1]
+
+    #code for BagLearner
+    learner = bl.BagLearner(learner = rt.RTLearner, kwargs = {"leaf_size":1}, bags = 20, boost = False, verbose = False)
+    learner.addEvidence(trainX, trainY)
+
+
+    print "In sample results for BagLearner"
+    predY = learner.query(trainX)
+    rmse = math.sqrt(((trainY - predY) ** 2).sum() / trainY.shape[0])
+    print "RMSE: ", rmse
+    c = np.corrcoef(predY, y=trainY)
+    print "corr: ", c[0, 1]
+
+    #Get out of sample results
+    print "Out of sample results for Baglearner"
+    predY = learner.query(testX)  # query
+    rmse = math.sqrt(((testY - predY) ** 2).sum() / testY.shape[0])
+    print "RMSE: ", rmse
+    c = np.corrcoef(predY, y=testY)
+    print "corr: ", c[0, 1]

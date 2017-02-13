@@ -42,7 +42,6 @@ class BagLearner(object):
         for i in range(len(self.instancelist)):
             # sample dataframe
             data = data.sample(frac=1,replace=True)
-            log(data.head())
             trainX = data.iloc[:, 0:-1]
             trainY = data.iloc[:, -1]
             self.instancelist[i].addEvidence(trainX,trainY)
@@ -67,5 +66,8 @@ class BagLearner(object):
             query_list.append(Y)
         df=pd.DataFrame(query_list)
         return df.mean(axis=0)
+
+    def author(self):
+        return 'nbuckley7'  #  Georgia Tech username.
 
 
