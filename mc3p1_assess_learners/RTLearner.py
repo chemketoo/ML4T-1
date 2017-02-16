@@ -10,7 +10,7 @@ import pandas as pd
 import random
 
 #!!!!DEBUG Statement, set to FALSE when submitting
-debug=True
+debug=False
 def log(s):
     if debug:
         print s
@@ -25,17 +25,17 @@ class RTLearner(object):
 
         self.col = col  # col that splits on
         self.value = value  # split value
-        self.results = results
+        self.results = results #final resulst
         self.tb = tb
         self.fb = fb
 
-    # Note: the core structure, ideas and some lines for the code below were borrowed from the following website:
+    # Note: the core ideas and some lines for the code below were borrowed from the following website:
     # http://www.patricklamle.com/Tutorials/Decision%20tree%20python/tuto_decision%20tree.html
     # I did have to adapt the code substantially to work with non-string/classification (ie continuous) type DTs
     # I also had to modify it to work in python 2.7 (it was in python 3.0)
     def build_tree(self, data):
 
-        if len(data) <= 1 or len(np.unique(data.iloc[:, -1])) <= 1:
+        if len(data) <= self.leaf_size or len(np.unique(data.iloc[:, -1])) <= 1:
             return RTLearner(results=np.mean(data.iloc[:, -1]))
 
         # randomly pick a random feature i of data to split on
@@ -51,7 +51,7 @@ class RTLearner(object):
         #    random_vals = data.iloc[0, i]
         # get mean of those values
         split_val = np.mean(random_vals)
-        if len(data) > self.leaf_size and len(np.unique(data.iloc[:, -1])) > self.leaf_size:
+        if len(data) > self.leaf_size and len(np.unique(data.iloc[:, -1])) > 1:
 
             fb = self.build_tree(data=data[data.iloc[:, split_ix] <= split_val])
             tb = self.build_tree(data=data[data.iloc[:, split_ix] > split_val])
@@ -75,7 +75,6 @@ class RTLearner(object):
             self.tree=self.tree.fb
             self.printtree(indent + '  ')
 
-    #uncomment the following to print tree
     #!!!bring in the data
     def addEvidence(self, trainX, trainY):
         #join the data so can track the predictions as we manipulate
@@ -122,15 +121,15 @@ class RTLearner(object):
         @summary: Estimate a set of test points given the model we built.
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
-        """
+
         # get the linear result
         ret_val = (self.model_coefs[:-1] * points).sum(axis=1) + self.model_coefs[-1]
         # add some random noise
         ret_val = ret_val + 0.09 * np.random.normal(size=ret_val.shape[0])
         return ret_val
-
+         """
     def author(self):
         return 'nbuckley7'  #  Georgia Tech username.
 
-if __name__ == "__main__":
-    print "get me a shrubbery"
+#if __name__ == "__main__":
+#    print "get me a shrubbery"

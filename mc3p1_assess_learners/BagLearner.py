@@ -6,13 +6,14 @@
 #Y = learner.query(Xtest)
 
 import RTLearner as rt
+import LinRegLearner as lrl
 
 import numpy as np
 import pandas as pd
 import random
 
 #!!!!DEBUG Statement, set to FALSE when submitting
-debug=True
+debug=False
 def log(s):
     if debug:
         print s
@@ -29,6 +30,8 @@ class BagLearner(object):
         if self.learner==rt.RTLearner:
                 self.instancelist = [self.learner(leaf_size=self.kwargs["leaf_size"], verbose=False) for i in range(bags)]
 
+        if self.learner==lrl.LinRegLearner:
+            self.instancelist = [self.learner(verbose=False) for i in range(bags)]
 
     #define function to take inputs and produce a decision tree
 
@@ -38,17 +41,16 @@ class BagLearner(object):
         data=pd.DataFrame(data)
 
 
-        #!!!modify this later to include case of regression
         for i in range(len(self.instancelist)):
             # sample dataframe
             data = data.sample(frac=1,replace=True)
             trainX = data.iloc[:, 0:-1]
             trainY = data.iloc[:, -1]
+            #add randomly selected data with replacement to the instance
             self.instancelist[i].addEvidence(trainX,trainY)
 
 
-        # training step,
-        #self.learners.append(learner.addEvidence(trainX, trainY))
+        # training step
 
         #test printtree
 
